@@ -6,23 +6,34 @@
 #include <sstream>
 using namespace std;
 
-// This class converts the inputted string into a vector of commands
-// Namespace boost will only apply here since this will be the only area where
-// boost will be used. To prevent possible inability to be translated
+void display(vector<string> & v){
+	for(unsigned i = 0; i < v.size(); i++){
+		cout << v.at(i) << endl;	
+	}
+}
  
 //vector<cmd> tokenized(string& in){
 void tokenized(string& in){
-	using namespace boost;
 	vector<string> temp;
 	istringstream s1(in);
 	string through;
 	while(s1 >> through){
 		temp.push_back(through);
 	}
+	vector<string> full;
+	string complete = "";
 	for(unsigned i = 0; i < temp.size(); i++){
-		cout << temp.at(i) << endl;
+		if(temp.at(i).find(";") != string::npos){
+			string split = temp.at(i).substr(0,temp.at(i).size() - 1);
+			string colon = temp.at(i).substr(temp.at(i).size() - 1, temp.at(i).size());
+			temp.at(i) = colon;
+			temp.insert(temp.begin() + i , split);
+			++i;
+		}
 	}
+	display(temp);
 }
+
 
 int main(){
 //while(true){
