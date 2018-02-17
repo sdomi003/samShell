@@ -1,12 +1,31 @@
 #include <iostream>
-#include <boost/tokenizer.hpp>
 #include <string>
 #include <vector>
 
-class command {
-	private:
-	vector<strings>cmd;
+using namespace std;
+
+class cmd{
+	protected:
+	string str;
+	bool AlreadyRun;
 	public:
-	void run();
-	
-}
+	cmd(){};
+	cmd(string element);
+	virtual bool execute(bool&) = 0;
+	virtual string showstring() = 0;
+};
+
+class ex: public cmd {
+	public:
+	ex(string element);
+	bool execute(bool&);	
+	string showstring();
+};
+
+class connector: public cmd {
+	public:
+	connector(string element);
+	bool execute(bool&);
+	string showstring();
+};
+
