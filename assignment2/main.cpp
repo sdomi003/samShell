@@ -1,80 +1,79 @@
-#include <iostream>
-#include "command.h"
-#include <vector>
-#include <boost/tokenizer.hpp>
+#include <stdio.h>
 #include <string>
-#include <sstream>
+#include <iostream>
+#include <cstddef>
+#include "Command.h"
+#include "Executable.h"
+#include "Composites.h"
+
 using namespace std;
 
-void display(vector<cmd*> & v){
-	for(unsigned i = 0; i < v.size(); i++){
-		cout << v.at(i) -> showstring() << endl;	
-	}
-}
- 
-vector<cmd*> tokenized(string& in){
-	vector<string> temp;
-	istringstream s1(in);
-	string through;
-	while(s1 >> through){
-		temp.push_back(through);
-	}
-	for(unsigned i = 0; i < temp.size(); i++){
-		if(temp.at(i).find(";") != string::npos){
-			string split = temp.at(i).substr(0,temp.at(i).size() - 1);
-			string colon = temp.at(i).substr(temp.at(i).size() - 1, temp.at(i).size());
-			temp.at(i) = colon;
-			temp.insert(temp.begin() + i , split);
-			++i;
-		}
-	}
-	vector<cmd* > full;
-	string buildstring = "";
-	bool newstring = true;
-	for(unsigned i = 0; i < temp.size(); ++i){
-			if(temp.at(i) == ";" || temp.at(i) == "&&" || temp.at(i) == "||"|| i == temp.size() - 1){
-				if(i == temp.size() - 1){
-					buildstring = buildstring + " ";
-					buildstring = buildstring + temp.at(i);
-					full.push_back(new ex(buildstring));
-				}
-				else{
-					full.push_back(new ex(buildstring));
-					if(temp.at(i) == ";"){
-						full.push_back(new connector(";"));
-					}
-					else if(temp.at(i) == "&&"){
-						full.push_back(new connector("&&"));
-					}
-					else {
-						full.push_back(new connector("||"));
-					}
-					buildstring = "";
-					newstring = true;
-				}
-			}
-			else{
-				if(newstring){
-					buildstring = buildstring + temp.at(i);	
-					newstring = false;	
-				}
-				else {
-					buildstring = buildstring + " ";
-					buildstring = buildstring + temp.at(i);	
-				}
-			}	
-	}
-	return full;
-}
-
-
 int main(){
-//while(true){	
-	string input;
-	cout << "$";
-	getline(cin,input);
-	vector<cmd*> command = tokenized(input);
-	display(command);
-//}
-return 0;
+    
+    string str = "ls; echo hello world && echo hi || touch NewFolder && echo jem";
+    
+    Command* link, *ex = NULL;
+    string args;
+//  need to set the first left here
+    size_t start = 0;
+    size_t found = 0;
+    
+    found = str.find_first_of(";&|",start);
+    args = str.substr(start, found - start);
+    
+    if(str[found] == '&'){
+        ex = new Executable(args);
+        link = new And(ex, 0);
+        start = found + 2;
+    }
+    else if(str[found] == '|'){
+        ex = new Executable(args);
+        link = new Or(ex, 0);
+        start = found + 2;
+    }
+    else{
+        ex = new Executable(args);
+        link = new Semi(ex, 0);
+        start = found + 1;
+    }
+    
+    found = str.find_first_of(";&|",start);
+    args = str.substr(start, found - start);
+    
+    while(found != string::npos){
+        if(str[found] == '&'){
+            ex = new Executable(args);
+            link->setRightChild(ex);
+            Command* temp = link;
+            link = new And(temp, 0);
+            start = found + 2;
+            temp = 0;
+        }
+        else if(str[found] == '|'){
+            ex = new Executable(args);
+            link->setRightChild(ex);
+            Command* temp = link;
+            link = new Or(temp, 0);
+            start = found + 2;
+            temp = 0;
+        }
+        else{
+            ex = new Executable(args);
+            link->setRightChild(ex);
+            Command* temp = link;
+            link = new Semi(temp, 0);
+            start = found + 1;
+            temp = 0;
+        }
+        found = str.find_first_of(";&|",start);
+        args = str.substr(start, found - start);
+    }
+    // set last right
+    ex = new Executable(args);
+    link->setRightChild(ex);
+    
+    link->execute();
+
+    
+    return 0;
 }
