@@ -10,7 +10,7 @@ using namespace std;
 
 int main(){
     
-    string str = "ls; echo hello world && echo hi || touch NewFolder && echo jem";
+    string str = "echo 1 && echo 2 || echo 3 && ech 4; echo 5"; //; echo 5";
     
     Command* link, *ex = NULL;
     string args;

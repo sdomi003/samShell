@@ -13,10 +13,10 @@ class Semi : public Command{
 	
 	public:
 		Semi(Command* l, Command* r){this->left = l; this->right = r;}
-		void execute(){
+		bool execute(){
 		    left->execute(); 
 		    //cout << "execute semi" << endl;
-		    right->execute();
+		    return (right->execute());
 		}
 		void setRightChild(Command* r){this->right = r;}
 };
@@ -28,10 +28,13 @@ class And : public Command{
 	
 	public:
 		And(Command* l, Command* r){this->left = l; this->right = r;}
-		void execute(){
-		    left->execute(); 
+		bool execute(){
+		    if(left->execute()){
+		    	return (right->execute());
+		    } 
+		    return false;
 		    //cout << "execute And" << endl;
-		    right->execute();
+		    
 		}
 		void setRightChild(Command* r){this->right = r;}
 };
@@ -41,10 +44,13 @@ class Or : public Command{
 	Command* right;
 	public:
 		Or(Command* l, Command* r){this->left = l; this->right = r;}
-		void execute(){
-		    left->execute(); 
+		bool execute(){
+			if(!left->execute()){
+				return (right->execute());
+			}
 		    //cout << "execute Or" << endl;
-		    right->execute();
+		    return true;
+		 
 		}
 		void setRightChild(Command* r){this->right = r;}
 };

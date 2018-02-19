@@ -10,7 +10,7 @@ using namespace std;
 class Command{
     public:
         Command(){}
-    	virtual void execute() = 0;
+    	virtual bool execute() = 0;
     	virtual void setRightChild(Command* r) = 0;
 };
 

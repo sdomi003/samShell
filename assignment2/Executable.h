@@ -21,7 +21,7 @@ string args;
 public:
 	Executable(string a){this->args = a;}
 	//idea, make execute of type bool to return whether or not it worked
-	void execute(){
+	bool execute(){
 		// split string into tokenS
 		
 	  char* args_arr[args.length()+1];	
@@ -39,7 +39,7 @@ public:
 		++i;
 	  }
 	  args_arr[i] = NULL;
-	  //cout << args_arr[i-1] << endl;
+	  cout << args_arr[0] << endl;
 	  
 	  //start forking
 	  pid_t pid = fork();
@@ -47,17 +47,20 @@ public:
 	  if(pid < 0){
 	  	cout << "ERROR: RSHELL FORKING FAILED" << endl;
 	  	exit(1);
+		//return false;
 	  }
 	  else if(pid == 0){
 	  	if(execvp(args_arr[0], args_arr) == -1){
-	  		perror("execvp");
-	  		return; // in the furutre, return bool execute as false here
+	  		cout << "ERROR: NO argument found" << endl;
+	  		//exit(1);
+	  		return false;
 	  	}
 	  }
 	  
 	  	else{
 	  		while (wait(&status) != pid);
 	  		//pid_t waitpid(pid_t pid, int *status, int options);
+
 	  	}
 	  	//return true for execute function here
 	  
@@ -65,7 +68,7 @@ public:
 	  //DON'T DELETE CSTR UNTIL I'M DONE USING TOKENS
 	  delete[] cstr;
 		//test
-	    
+	  return true;
 	}
 	void setRightChild(Command* h){cout << "error, tried to set right child of executable" << endl;}
 };
