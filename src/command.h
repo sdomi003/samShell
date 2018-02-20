@@ -1,20 +1,24 @@
+#ifndef COMMAND_H
+#define COMMAND_H
 #include <iostream>
 #include <string>
 #include <vector>
 
 using namespace std;
 
+// cmd is base class with virtual void showstring and execute
 class cmd{
 	protected:
 	string str;
 	bool AlreadyRun;
 	public:
+	~cmd(){};
 	cmd(){};
 	cmd(string element);
 	virtual bool execute(bool&) = 0;
 	virtual string showstring() = 0;
 };
-
+// both these classes implement them
 class ex: public cmd {
 	public:
 	ex(string element);
@@ -29,3 +33,4 @@ class connector: public cmd {
 	string showstring();
 };
 
+#endif //COMMAND_H
