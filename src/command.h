@@ -12,7 +12,7 @@ class cmd{
 	string str;
 	bool AlreadyRun;
 	public:
-	~cmd(){delete this;};
+	~cmd(){};
 	cmd(){};
 	cmd(string element);
 	virtual bool execute(bool&) = 0;

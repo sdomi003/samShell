@@ -28,8 +28,9 @@ bool ex::execute(bool& itr){
 			order.push_back(in);
 		}
 		//then creates char* array to use for
-		//execvp	
-		char* args [order.size() + 1];
+		//execvp
+		//set to 100 for werror	
+		char* args [100];
 		// assigns each character array to
 		// character pointer array
 		for(unsigned i = 0; i < order.size(); ++i){
@@ -83,12 +84,12 @@ bool ex::execute(bool& itr){
 			exit(1);
 		}
 	}
-	else{
-		// if itr passed in was false then it returns it
-		//return itr;
+		//else case
+		//it returns true
 		itr = true;
 		return itr;
-	}
+	
+
 }
 // connector execute
 bool connector::execute(bool& itr){

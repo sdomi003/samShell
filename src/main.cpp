@@ -42,7 +42,7 @@ vector<cmd*> tokenized(string& in){
 	for(unsigned i = 0; i < temp.size(); i++){
 		if(temp.at(i).find(";") != string::npos || temp.at(i).find("#") != string::npos || temp.at(i).find("\"") != string::npos){
 			//splits if at the end of a string [ls] [-la;] becomes [ls] [-la] [;]	
-			if(temp.at(i) != ";" && temp.at(i).find("#") == string::npos && temp.at(i).find(";") == temp.at(i).size() - 1
+			if((temp.at(i) != ";" && temp.at(i).find(";") == temp.at(i).size() - 1) || temp.at(i).find("#") == temp.at(i).size() -1
 			 || temp.at(i).find("\"") == temp.at(i).size() - 1 ){
 				string split = temp.at(i).substr(0,temp.at(i).size() - 1);
 				string colon = temp.at(i).substr(temp.at(i).size() - 1, temp.at(i).size());
