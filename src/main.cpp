@@ -140,7 +140,6 @@ int main(){
 		getline(cin,input);
 		//uses tokenizer function to create a list of commands
 		vector<cmd*> command = tokenized(input);
-		display(command);
 		bool run = true;
 		//lastly it iterates through the vector and executes the command
 		for(unsigned i = 0; i < command.size(); ++i){
