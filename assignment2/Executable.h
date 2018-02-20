@@ -39,33 +39,50 @@ public:
 		++i;
 	  }
 	  args_arr[i] = NULL;
-	  cout << args_arr[0] << endl;
+	  //cout << args_arr[0] << endl;
 	  
-	  //start forking
-	  pid_t pid = fork();
+	  //COPY
 	  int status;
-	  if(pid < 0){
-	  	cout << "ERROR: RSHELL FORKING FAILED" << endl;
-	  	exit(1);
-		//return false;
-	  }
-	  else if(pid == 0){
-	  	if(execvp(args_arr[0], args_arr) == -1){
-	  		cout << "ERROR: NO argument found" << endl;
-	  		//exit(1);
-	  		return false;
-	  	}
-	  }
-	  
-	  	else{
-	  		while (wait(&status) != pid);
-	  		//pid_t waitpid(pid_t pid, int *status, int options);
+	    bool itr;
+	  	pid_t pid = fork();
+		//child pid	
+		if(pid == 0){
+			//runs execvp on child
+			//if sucessful returns 1 else 0
+			if(execvp(args_arr[0],args_arr) == -1){
+				perror("exec");
+				exit(1);
+			}	
+			else{
+				exit(0);
+			}
+		}
+		//adult pid
+		else if (pid > 0){
+			//waits for childs return
+			wait(&status);
+			// if not -1 error in wait
+			if (wait(&status) != -1){
+				perror("wait");
+			}
+			//WIFEXITED means child returned normally
+			if(WIFEXITED(status)){
+				// if 0 child run of execvp was successful
+				// so itr is true
+				if (WEXITSTATUS(status) == 0){
+					itr = true;
+					return itr;
+				}
+				//else child run of execvp was incorrect so
+				//it ran uncessfully
+				//itr is returned false
+				else{
+					itr = false;
+					return itr;
+				}
+			}
+		}
 
-	  	}
-	  	//return true for execute function here
-	  
-	  
-	  //DON'T DELETE CSTR UNTIL I'M DONE USING TOKENS
 	  delete[] cstr;
 		//test
 	  return true;
