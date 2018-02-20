@@ -85,8 +85,8 @@ bool ex::execute(bool& itr){
 	}
 	else{
 		// if itr passed in was false then it returns it
-		// since previous connector properties means it
-		// doesnt have to run
+		//return itr;
+		itr = true;
 		return itr;
 	}
 }
