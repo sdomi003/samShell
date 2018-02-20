@@ -100,7 +100,10 @@ vector<cmd*> tokenized(string& in){
 				}
 				// other wise if creates the executible then detects what connector it is and creates a connector of that string
 				else{
-					full.push_back(new ex(buildstring));
+					//added zero case for a line thats only comments
+					if(i != 0){
+						full.push_back(new ex(buildstring));
+					}
 					if(temp.at(i) == ";"){
 						full.push_back(new connector(";"));
 					}
