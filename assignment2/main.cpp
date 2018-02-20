@@ -12,7 +12,12 @@ int main(){
     
     string str;
     cout << "$ ";
+    size_t first_hash;
     getline(cin, str);
+    first_hash = str.find_first_of("#",0);
+    if(first_hash != string::npos){
+        str.resize(first_hash); // maybe +1
+    }
    
     while(str != "exit" && str != "quit"){
         bool single = false;
@@ -87,6 +92,10 @@ int main(){
         
         cout << "$ ";
         getline(cin, str);
+        first_hash = str.find_first_of("#",0);
+        if(first_hash != string::npos){
+            str.resize(first_hash); // maybe +1
+        }
     }
 
 
