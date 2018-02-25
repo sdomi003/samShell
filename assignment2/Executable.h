@@ -23,8 +23,8 @@ public:
 	//idea, make execute of type bool to return whether or not it worked
 	bool execute(){
 		// split string into tokenS
-		
-	  char* args_arr[args.length()+1];	
+	  
+	  char* args_arr[100];	
 	  char * cstr = new char [args.length()+1];
 	  std::strcpy (cstr, args.c_str());
 		
