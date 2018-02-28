@@ -6,11 +6,6 @@
 #include "Executable.h"
 #include "Composites.h"
 
-// where i left off:
-// issue: echo hi && ( echo 1 && echo 2 ) || echo 3
-// after the ), the next iteration will find || and set the right of link (which already has a right, ie the subtree) to the newly created executable.
-// A good solution is to create a bool which will keep track if the new child should be left or right, and this will also eliminate the need for 
-// the repitition of the if else statements.
 
 using namespace std;
 
@@ -43,7 +38,7 @@ Command* make_tree(string str, size_t &start){
         single = true;
     }
     else if(str[found] == '('){
-        // NOTE:: FIX ME :: when we have a single command in parenthesis like (echo hi) then it might output 2x since variable single cannot be set since we don't know if it is true
+        
         ++found;
         link = make_tree(str, found); // double check that found here is the right param to use
         // cout << "special case execute: " << endl;
