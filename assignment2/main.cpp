@@ -6,6 +6,16 @@
 #include "Executable.h"
 #include "Composites.h"
 
+/*  IDEAS FOR TEST
+        FOR THE CASE WHERE USER USES "test"
+            SIMPLY PASRSE AS USUAL.
+            WHEN AN EXECUTABLE IS GOING TP BE CREATED, FIRST CHECK TO SEE IF THE FIRST ARG IS "test"
+            IF FIRST ARG IS TEST, THEN INSTEAD OF CREATING EXECUTABLE, CREATE TEST
+        FOR THE CASE WHERE USER USES []
+            ADD "[" TO THE SEARCH-FOR CHARACTERS.
+            IF "[" IS FOUND, THEN SEARCH FOR ']' THEN SET THE ARGS TO THE STRING INSIDE "[]" AND CREATE A "test" OBJECT
+                
+*/      
 
 using namespace std;
 
@@ -38,6 +48,8 @@ Command* make_tree(string str, size_t &start){
         single = true;
     }
     else if(str[found] == '('){
+            //      NOTE NOTE NOTE NOTE 
+            // FIRST THING AFTER ( COULD BE A [] OR TEST
         
         ++found;
         link = make_tree(str, found); // double check that found here is the right param to use
