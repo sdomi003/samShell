@@ -14,6 +14,10 @@
         FOR THE CASE WHERE USER USES []
             ADD "[" TO THE SEARCH-FOR CHARACTERS.
             IF "[" IS FOUND, THEN SEARCH FOR ']' THEN SET THE ARGS TO THE STRING INSIDE "[]" AND CREATE A "test" OBJECT
+            
+    IDEA #2 - this is the one I'm implementing right now
+        treat test and [] as normal executables, except when it comes time to execute, simply check to see if the first char is [ or if the first arg is "test"
+        and then execute a different way (test function is already written by me in stat_practice.cpp)
                 
 */      
 
@@ -190,28 +194,76 @@ Command* make_tree(string str, size_t &start){
 int main(){
     
     string str;
-    cout << "$ ";
-    size_t first_hash;
-    getline(cin, str);
-    first_hash = str.find_first_of("#",0);
-    if(first_hash != string::npos){
-        str.resize(first_hash); // maybe +1
-    }
-    // FIX ME: ADD A CHECKER TO ENSURE MATCHING ()
-    // FIX ME: might as well check for (( here too
-    // at this point, str should be ready to be parsed and has been checked for matching () 
+    bool error = 0;
+    do{
+        int num_parenthesis = 0;
+        int num_brackets = 0;
+        error = 0;
+        cout << "$ ";
+        size_t first_hash;
+        getline(cin, str);
+        first_hash = str.find_first_of("#",0);
+        if(first_hash != string::npos){
+            str.resize(first_hash); // maybe +1
+        }
+        // FIX ME: ADD A CHECKER TO ENSURE MATCHING ()
+        // FIX ME: might as well check for (( here too
+        // at this point, str should be ready to be parsed and has been checked for matching () 
+        for(unsigned int i = 0; i < str.size(); ++i){
+            if(str.at(i) == '(' || str.at(i) == ')'){
+                ++num_parenthesis;
+            }
+            else if(str.at(i) == '[' || str.at(i) == ']'){
+                ++num_brackets;
+            }
+        }
+        
+        if (num_brackets % 2 != 0){
+            cout << "ERROR: Uneven number of brackets" << endl;
+            error = 1;
+        }
+        if (num_parenthesis % 2 != 0){
+            cout << "EROR: Unven number of parenthesis" << endl;
+            error = 1; 
+        }
+    }while(error == 1);
+    
     Command* base_node; 
     while(str != "exit" && str != "quit"){
         size_t start = 0;
         base_node = make_tree(str, start);
         base_node->execute();
         
-        cout << "$ ";
-        getline(cin, str);
-        first_hash = str.find_first_of("#",0);
-        if(first_hash != string::npos){
-            str.resize(first_hash); // maybe +1
-        }
+        // get user input again
+        do{
+            int num_parenthesis = 0;
+            int num_brackets = 0;
+            error = 0;
+            cout << "$ ";
+            size_t first_hash;
+            getline(cin, str);
+            first_hash = str.find_first_of("#",0);
+            if(first_hash != string::npos){
+                str.resize(first_hash); // maybe +1
+            }
+            for(unsigned int i = 0; i < str.size(); ++i){
+                if(str.at(i) == '(' || str.at(i) == ')'){
+                    ++num_parenthesis;
+                }
+                else if(str.at(i) == '[' || str.at(i) == ']'){
+                    ++num_brackets;
+                }
+            }
+            
+            if (num_brackets % 2 != 0){
+                cout << "ERROR: Uneven number of brackets" << endl;
+                error = 1;
+            }
+            if (num_parenthesis % 2 != 0){
+                cout << "ERROR: Unven number of parenthesis" << endl;
+                error = 1; 
+            }
+        }while(error == 1);
     }
 
 
