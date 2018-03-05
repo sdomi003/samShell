@@ -30,7 +30,7 @@ public:
 		// split string into tokenS
 	  bool is_test = false;
 	  char flag = 'n';
-	  cout << "args: " << args << endl; 
+	 // cout << "args: " << args << endl; 
 	  // before we tokenize, let's check if the first word is "test" or if the first character is '['
       //	if true, we set is_test to true
       // case where we have "  [ hi/wer ]" 
