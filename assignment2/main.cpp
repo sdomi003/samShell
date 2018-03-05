@@ -6,11 +6,20 @@
 #include "Executable.h"
 #include "Composites.h"
 
-// where i left off:
-// issue: echo hi && ( echo 1 && echo 2 ) || echo 3
-// after the ), the next iteration will find || and set the right of link (which already has a right, ie the subtree) to the newly created executable.
-// A good solution is to create a bool which will keep track if the new child should be left or right, and this will also eliminate the need for 
-// the repitition of the if else statements.
+/*  IDEAS FOR TEST
+        FOR THE CASE WHERE USER USES "test"
+            SIMPLY PASRSE AS USUAL.
+            WHEN AN EXECUTABLE IS GOING TP BE CREATED, FIRST CHECK TO SEE IF THE FIRST ARG IS "test"
+            IF FIRST ARG IS TEST, THEN INSTEAD OF CREATING EXECUTABLE, CREATE TEST
+        FOR THE CASE WHERE USER USES []
+            ADD "[" TO THE SEARCH-FOR CHARACTERS.
+            IF "[" IS FOUND, THEN SEARCH FOR ']' THEN SET THE ARGS TO THE STRING INSIDE "[]" AND CREATE A "test" OBJECT
+            
+    IDEA #2 - this is the one I'm implementing right now
+        treat test and [] as normal executables, except when it comes time to execute, simply check to see if the first char is [ or if the first arg is "test"
+        and then execute a different way (test function is already written by me in stat_practice.cpp)
+                
+*/      
 
 using namespace std;
 
@@ -43,7 +52,9 @@ Command* make_tree(string str, size_t &start){
         single = true;
     }
     else if(str[found] == '('){
-        // NOTE:: FIX ME :: when we have a single command in parenthesis like (echo hi) then it might output 2x since variable single cannot be set since we don't know if it is true
+            //      NOTE NOTE NOTE NOTE 
+            // FIRST THING AFTER ( COULD BE A [] OR TEST
+        
         ++found;
         link = make_tree(str, found); // double check that found here is the right param to use
         // cout << "special case execute: " << endl;
@@ -183,28 +194,76 @@ Command* make_tree(string str, size_t &start){
 int main(){
     
     string str;
-    cout << "$ ";
-    size_t first_hash;
-    getline(cin, str);
-    first_hash = str.find_first_of("#",0);
-    if(first_hash != string::npos){
-        str.resize(first_hash); // maybe +1
-    }
-    // FIX ME: ADD A CHECKER TO ENSURE MATCHING ()
-    // FIX ME: might as well check for (( here too
-    // at this point, str should be ready to be parsed and has been checked for matching () 
+    bool error = 0;
+    do{
+        int num_parenthesis = 0;
+        int num_brackets = 0;
+        error = 0;
+        cout << "$ ";
+        size_t first_hash;
+        getline(cin, str);
+        first_hash = str.find_first_of("#",0);
+        if(first_hash != string::npos){
+            str.resize(first_hash); // maybe +1
+        }
+        // FIX ME: ADD A CHECKER TO ENSURE MATCHING ()
+        // FIX ME: might as well check for (( here too
+        // at this point, str should be ready to be parsed and has been checked for matching () 
+        for(unsigned int i = 0; i < str.size(); ++i){
+            if(str.at(i) == '(' || str.at(i) == ')'){
+                ++num_parenthesis;
+            }
+            else if(str.at(i) == '[' || str.at(i) == ']'){
+                ++num_brackets;
+            }
+        }
+        
+        if (num_brackets % 2 != 0){
+            cout << "ERROR: Uneven number of brackets" << endl;
+            error = 1;
+        }
+        if (num_parenthesis % 2 != 0){
+            cout << "EROR: Unven number of parenthesis" << endl;
+            error = 1; 
+        }
+    }while(error == 1);
+    
     Command* base_node; 
     while(str != "exit" && str != "quit"){
         size_t start = 0;
         base_node = make_tree(str, start);
         base_node->execute();
         
-        cout << "$ ";
-        getline(cin, str);
-        first_hash = str.find_first_of("#",0);
-        if(first_hash != string::npos){
-            str.resize(first_hash); // maybe +1
-        }
+        // get user input again
+        do{
+            int num_parenthesis = 0;
+            int num_brackets = 0;
+            error = 0;
+            cout << "$ ";
+            size_t first_hash;
+            getline(cin, str);
+            first_hash = str.find_first_of("#",0);
+            if(first_hash != string::npos){
+                str.resize(first_hash); // maybe +1
+            }
+            for(unsigned int i = 0; i < str.size(); ++i){
+                if(str.at(i) == '(' || str.at(i) == ')'){
+                    ++num_parenthesis;
+                }
+                else if(str.at(i) == '[' || str.at(i) == ']'){
+                    ++num_brackets;
+                }
+            }
+            
+            if (num_brackets % 2 != 0){
+                cout << "ERROR: Uneven number of brackets" << endl;
+                error = 1;
+            }
+            if (num_parenthesis % 2 != 0){
+                cout << "ERROR: Unven number of parenthesis" << endl;
+                error = 1; 
+            }
+        }while(error == 1);
     }
 
 
