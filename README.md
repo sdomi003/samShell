@@ -49,7 +49,7 @@ We have developed some new features into Rshell including "[]" ,"Test" and "()".
  
  has the two and echo groups as the main precedence while:
  
-      echo a && echo b || echo c && echo d
+            echo a && echo b || echo c && echo d
       
   has no priority and will simply execute from left to right.
 
