@@ -38,6 +38,11 @@ Other than the previous issues, we have had no new errors in our code from testi
 ## Percentage Distrubution
 * Jason Mendoza
   * Task 1: Github Setup (10%) 
-  * Task 2: The Precedence Operators (30%)
-  * Task 6: Construct json
+  * Task 4: The Precedence Operators (30%)
+  * Task 6: Construct json and README files and git commit (10%)
+  * __Total: 50%__
+* Samuel Dominguez
+  * Task 2: "Test" command 1 (for the case "test -e test/file/path", 20%); 
+  * Task 3: "Test" command 2 (for the case "[ -e test/file/path ]", 15%);
+  * Task 5: construct test scripts (enough test cases, 15%)
   * __Total: 50%__
