@@ -27,13 +27,31 @@ There are some issues."" acts as an escape character in my implementation the co
   Overall I believe my implementation of Rshell was rather successful. We managed to parse the strings by using a string stream and then split the various connectors from their strings, then finally we created the final cmd* vector that allowed us to execute all the commands. Future iterations of this project can lead to difficulties as we only have a connector and execute class.
 
 ------------------------------------------------------------------------------------------------------------------------------------------
-# assignment 3
+# Assignment 3
 
 ## Overview
 We changed the implementation from a vector to a tree because of questions in modularity. We now implemented "[]", "()" and "test" along with the usual "&&" "||" and ";"  operators. These also have unique properties.
 
 ## Issues
-Other than the previous issues, we have had no new errors in our code from testing. 
+Other than the previous issues, we have had no new errors in our code from testing.
+
+## New Features:
+We have developed some new features into Rshell including "[]" ,"Test" and "()".
+* "Test" is a command that essentially tests a command and returns a 0 if true or 1 if false. It has the following flags:
+ * -e checks if a file/directory exists (is also the default if no flag given)
+ * -f checks if the file/directory exists and is a regular file
+ * -d checks if the file/directory exists and is a directory.
+ * "[]" denotes the symbolic version of the test command.
+ * "()" is the precedence operator that changes the precedence of the operation.
+ * example:
+ 
+            (echo a && echo B) || (echo c && echo d)
+ 
+ has the two and echo groups as the main precedence while:
+ 
+      echo a && echo b || echo c && echo d
+      
+  has no priority and will simply execute from left to right.
 
 ## Percentage Distrubution
 * Jason Mendoza
