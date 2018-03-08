@@ -28,9 +28,10 @@ public:
 	//idea, make execute of type bool to return whether or not it worked
 	bool execute(){
 		// split string into tokenS
+		
 	  bool is_test = false;
-	  char flag = 'n';
-	 // cout << "args: " << args << endl; 
+	  char flag = 'e';
+	  // cout << "args: " << args << endl; 
 	  // before we tokenize, let's check if the first word is "test" or if the first character is '['
       //	if true, we set is_test to true
       // case where we have "  [ hi/wer ]" 
@@ -56,6 +57,9 @@ public:
       	--last_char;
       }
       args = args.substr(first_char, last_char + 1);
+      if(args == "exit" || args == "quit"){
+      	throw "exiting";
+      }
       
       
       // test to see if first char is '['

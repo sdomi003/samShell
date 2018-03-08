@@ -21,6 +21,11 @@
                 
 */      
 
+// resolving issue with (echo A && echo B) && (echo C && echo D) && exit
+// exit will walways be treated as a leaf
+// create an if statement that returns NULL if exit is the argument
+// then in the execute function 
+
 using namespace std;
 
 Command* make_tree(string str, size_t &start){
@@ -228,11 +233,17 @@ int main(){
         }
     }while(error == 1);
     
-    Command* base_node; 
+    Command* base_node;
     while(str != "exit" && str != "quit"){
         size_t start = 0;
         base_node = make_tree(str, start);
-        base_node->execute();
+        try{
+            base_node->execute();
+        }
+        catch (const char* msg){
+            cout << msg << endl;
+            break;
+        }
         
         // get user input again
         do{
@@ -266,6 +277,6 @@ int main(){
         }while(error == 1);
     }
 
-
+    
     return 0;
 }
