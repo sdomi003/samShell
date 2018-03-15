@@ -1,7 +1,7 @@
 
 #ifndef EXECUTABLE_H
 #define EXECUTABLE_H
-
+// FIX INCLUDES
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -17,16 +17,70 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include <string>
+#include <fcntl.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <vector>
 
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <cstddef>
+
+#include <sys/types.h>
+#include <sys/stat.h>
 using namespace std;  
 
 class Executable : public Command{
 string args; 
 
 public:
-	Executable(string a){this->args = a;}
+	Executable(string a){this->args = a; this->in_fd = 0; this->out_fd = 0; this->in_file = ""; this->out_file = "";}
 	//idea, make execute of type bool to return whether or not it worked
-	bool execute(){
+	bool execute(int in_fd, int out_fd){
+		// set standard input and output right now
+		// if file is not empty, open it and set it using dup2
+		// if file is empty, check fd passed in as params
+		// if they are not 0, then set them as standard
+		// if they are 0, do nothing
+		
+		// first handle input
+		// STOP HERE FOR NOW, 12:35 pm
+		int old_out_fd;
+		// need to save old out file descriptor and put it back in at the end of execute
+		old_out_fd = dup(1);
+		if(!out_file.empty()){
+			// clean infile 
+			cout << "entered!" << endl;
+			int first_char = 0;
+      int last_char = out_file.size() - 1;
+      while(out_file.at(first_char) == ' '){
+      	++first_char;
+      }
+      while(out_file.at(last_char) == ' '){
+      	--last_char;
+      }
+      out_file = out_file.substr(first_char, last_char + 1);
+			// outfile is now cleaned
+			out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC);
+			cout << "out fd: " << out_fd << endl;
+			dup2(out_fd,1);
+			// out works when I DON"T close out_fd
+			//close(out_fd);
+		}
+		// STOP
+		// finished setting up standard in and out
+		
 		// split string into tokenS
 		
 	  bool is_test = false;
@@ -48,6 +102,7 @@ public:
       // the goal is for the tokenizeer to ONLY tokenize the filepath
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       
+      // begin cleaning args
       int first_char = 0;
       int last_char = args.size() - 1;
       while(args.at(first_char) == ' '){
@@ -57,6 +112,8 @@ public:
       	--last_char;
       }
       args = args.substr(first_char, last_char + 1);
+      
+      // args now contains cleaned string
       if(args == "exit" || args == "quit"){
       	throw "exiting";
       }
@@ -114,39 +171,50 @@ public:
 	  	struct stat sb;
 	  	if(stat(args_arr[0], &sb) == -1){
 	        cout << "(false)" << endl;
+	        dup2(old_out_fd, 1);
+	        close(old_out_fd);
 	        return false;
 	    }
 	    else if(flag == 'd'){
 	    	if(S_ISDIR(sb.st_mode)){
 	    		cout << "(true)" << endl;
+	    		dup2(old_out_fd, 1);
+	    		close(old_out_fd);
 	    		return true;
 	    	}
 	    	else{
 	    		cout << "(false)" << endl;
+	    		dup2(old_out_fd, 1);
+	    		close(old_out_fd);
 	    		return false;
 	    	}
 	    } 
 	    else if(flag == 'f'){
 	        if(S_ISREG(sb.st_mode)){
 	        	cout << "(true)" << endl;
+	        	dup2(old_out_fd, 1);
+	        	close(old_out_fd);
 	        	return true;
 	        }
 	        else{
 	        	cout << "(false)" << endl;
+	        	dup2(old_out_fd, 1);
+	        	close(old_out_fd);
 	        	return false;
 	        }
 	    }
 	    else if(flag == 'n' || flag == 'e'){
+	    	//file simply exists
 	    	cout << "(true)" << endl;
+	    	dup2(old_out_fd, 1);
+	    	close(old_out_fd);
 	    	return true;
 	    }
 	  }
 	  else{
-	  
-	  //COPY
-		  int status;
-		    bool itr;
-		  	pid_t pid = fork();
+	  	int status;
+	    bool itr;
+	  	pid_t pid = fork();
 			//child pid	
 			if(pid == 0){
 				//runs execvp on child
@@ -173,6 +241,8 @@ public:
 					// so itr is true
 					if (WEXITSTATUS(status) == 0){
 						itr = true;
+						dup2(old_out_fd, 1);
+						close(old_out_fd);
 						return itr;
 					}
 					//else child run of execvp was incorrect so
@@ -180,6 +250,8 @@ public:
 					//itr is returned false
 					else{
 						itr = false;
+						dup2(old_out_fd, 1);
+						close(old_out_fd);
 						return itr;
 					}
 				}
@@ -188,6 +260,8 @@ public:
 	
 	  delete[] cstr;
 		//test
+		dup2(old_out_fd, 1);
+		close(old_out_fd);
 	  return true;
 	}
 	

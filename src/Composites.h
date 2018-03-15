@@ -12,11 +12,11 @@ class Semi : public Command{
 	 
 	
 	public:
-		Semi(Command* l, Command* r){this->left = l; this->right = r;}
-		bool execute(){
-		    left->execute(); 
+		Semi(Command* l, Command* r){this->in_fd = 0; this->out_fd = 0; this->left = l; this->right = r;  this->in_file = ""; this->out_file = "";}
+		bool execute(int in_fd, int out_fd){
+		    left->execute(0,0); 
 		    //cout << "execute semi" << endl;
-		    return (right->execute());
+		    return (right->execute(0,0));
 		}
 		void setRightChild(Command* r){this->right = r;}
 };
@@ -27,10 +27,10 @@ class And : public Command{
 	 
 	
 	public:
-		And(Command* l, Command* r){this->left = l; this->right = r;}
-		bool execute(){
-		    if(left->execute()){
-		    	return (right->execute());
+		And(Command* l, Command* r){this->in_fd = 0; this->out_fd = 0; this->left = l; this->right = r;  this->in_file = ""; this->out_file = "";}
+		bool execute(int in_fd, int out_fd){
+		    if(left->execute(0,0)){
+		    	return (right->execute(0,0));
 		    } 
 		    return false;
 		    //cout << "execute And" << endl;
@@ -43,10 +43,10 @@ class Or : public Command{
 	Command* left;
 	Command* right;
 	public:
-		Or(Command* l, Command* r){this->left = l; this->right = r;}
-		bool execute(){
-			if(!left->execute()){
-				return (right->execute());
+		Or(Command* l, Command* r){this->in_fd = 0; this->out_fd = 0; this->left = l; this->right = r; this->in_file = ""; this->out_file = "";}
+		bool execute(int in_fd, int out_fd){
+			if(!left->execute(0,0)){
+				return (right->execute(0,0));
 			}
 		    //cout << "execute Or" << endl;
 		    return true;
