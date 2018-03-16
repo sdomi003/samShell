@@ -243,17 +243,17 @@ Command* make_tree(string str, size_t &start){
                 if(str[found] == '&'){
                     Command* temp = link;
                     link = new And(temp, 0);
-                    start = start + 2;
+                    start = found + 2;
                 }
                 else if(str[found] == '|'){
                     Command* temp = link;
                     link = new Or(temp, 0);
-                    start = start + 2;
+                    start = found + 2;
                 }
                 else if(str[found] == ';'){
                     Command* temp = link;
                     link = new Semi(temp, 0);
-                    ++start;
+                    start = found + 1;
                 }
                 else if(found == string::npos){
                     return link;
