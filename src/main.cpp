@@ -270,6 +270,57 @@ Command* make_tree(string str, size_t &start){
             // cout << endl;
             return link;
         }
+        else if(str[found] == '>'){
+            cout << "args > " << args <<  endl;
+            link->setRightChild(new Executable(args));
+            // echo a && echo b > yo.txt && echo c
+            
+            // first check if >>
+            if(str[found + 1] == '>'){
+                // we have >>, need to update start and also the redirection_type of the executable since this is first pass
+                
+                // increase found not start bc I will set start to found+1 later
+                ++ found;
+                // 0 is >, 1 is >>, 2 is <
+                link->set_redirection_type(1);
+            }
+            else{
+                // no need to ++start again, just set redirection_type to 0
+                link->set_redirection_type(0);
+            }
+            start = found + 1;
+            found = str.find_first_of(";&|",start);
+            args = str.substr(start, found - start);
+            cout << "argies : " << args << endl;
+            link->set_out_file(args);
+            if(found == string::npos){
+                //break; // check this using echo a && echo b > yo.txt
+                return link;
+            }
+            else if(str[found] == '&'){
+                Command* temp = link;
+                link = new And(temp, 0);
+                start = found + 2;
+                
+            }
+            else if(str[found] == '|'){
+                Command* temp = link;
+                link = new Or(temp, 0);
+                start = found + 2;
+                
+            }
+            else if(str[found] == ';'){
+                Command* temp = link;
+                link = new Semi(temp, 0);
+                start = found + 1;
+            }
+            else{
+                cout << "error 123" << endl;
+            }
+          
+            
+            
+        }
         else{
             ex = new Executable(args);
             link->setRightChild(ex);

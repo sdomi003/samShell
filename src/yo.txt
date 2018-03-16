@@ -1,4 +1,2 @@
-exe args: echo b 
+exe args:  echo b 
 b
-exe args:  echo c
-c
