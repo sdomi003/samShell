@@ -171,6 +171,7 @@ public:
 	  	struct stat sb;
 	  	if(stat(args_arr[0], &sb) == -1){
 	        cout << "(false)" << endl;
+	        close(out_fd);
 	        dup2(old_out_fd, 1);
 	        close(old_out_fd);
 	        return false;
@@ -178,12 +179,14 @@ public:
 	    else if(flag == 'd'){
 	    	if(S_ISDIR(sb.st_mode)){
 	    		cout << "(true)" << endl;
+	    		close(out_fd);
 	    		dup2(old_out_fd, 1);
 	    		close(old_out_fd);
 	    		return true;
 	    	}
 	    	else{
 	    		cout << "(false)" << endl;
+	    		close(out_fd);
 	    		dup2(old_out_fd, 1);
 	    		close(old_out_fd);
 	    		return false;
@@ -192,12 +195,14 @@ public:
 	    else if(flag == 'f'){
 	        if(S_ISREG(sb.st_mode)){
 	        	cout << "(true)" << endl;
+	        	close(out_fd);
 	        	dup2(old_out_fd, 1);
 	        	close(old_out_fd);
 	        	return true;
 	        }
 	        else{
 	        	cout << "(false)" << endl;
+	        	close(out_fd);
 	        	dup2(old_out_fd, 1);
 	        	close(old_out_fd);
 	        	return false;
@@ -206,6 +211,7 @@ public:
 	    else if(flag == 'n' || flag == 'e'){
 	    	//file simply exists
 	    	cout << "(true)" << endl;
+	    	close(out_fd);
 	    	dup2(old_out_fd, 1);
 	    	close(old_out_fd);
 	    	return true;
@@ -241,6 +247,7 @@ public:
 					// so itr is true
 					if (WEXITSTATUS(status) == 0){
 						itr = true;
+						close(out_fd);
 						dup2(old_out_fd, 1);
 						close(old_out_fd);
 						return itr;
@@ -250,6 +257,7 @@ public:
 					//itr is returned false
 					else{
 						itr = false;
+						close(out_fd);
 						dup2(old_out_fd, 1);
 						close(old_out_fd);
 						return itr;
@@ -260,6 +268,7 @@ public:
 	
 	  delete[] cstr;
 		//test
+		close(out_fd);
 		dup2(old_out_fd, 1);
 		close(old_out_fd);
 	  return true;
