@@ -41,23 +41,30 @@ class And : public Command{
 					// test case
 					// clean .txt
 					cout << "and file out entered!" << endl;
-					cout << "outfile before clean:" << out_file <<":" << endl; 
-					int first_char = 0;
-					int last_char = out_file.size() - 1;
-					while(out_file.at(first_char) == ' '){
-					  ++first_char;
+					if(redirection_type == 0 || redirection_type == 1){
+						cout << "outfile before clean:" << out_file <<":" << endl; 
+						int first_char = 0;
+						int last_char = out_file.size() - 1;
+						while(out_file.at(first_char) == ' '){
+						  ++first_char;
+						}
+						while(out_file.at(last_char) == ' '){
+						  --last_char;
+						}
+						out_file = out_file.substr(first_char, last_char); // +1?
+						// done cleaning .txt
+						cout << "cleaned:" << out_file << ":" << endl;
+						
+						old_out = dup(1);
+						if(redirection_type == 0){
+							out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC);
+						}
+						else{
+							out_fd = open(out_file.c_str(), O_WRONLY | O_APPEND);
+						}
+						cout << "special out_fd: " << out_fd << endl;
+						dup2(out_fd, 1);	
 					}
-					while(out_file.at(last_char) == ' '){
-					  --last_char;
-					}
-					out_file = out_file.substr(first_char, last_char); // +1?
-					// done cleaning .txt
-					cout << "cleaned:" << out_file << ":" << endl;
-					
-					old_out = dup(1);
-					out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC);
-					cout << "special out_fd: " << out_fd << endl;
-					dup2(out_fd, 1);
 				}
 		    	bool itr = right->execute(0,0);
 		    	if(redirection_type != -1){
