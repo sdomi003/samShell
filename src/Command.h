@@ -13,7 +13,7 @@ class Command{
         int out_fd;
         string in_file;
         string out_file;
-        int re_type;
+        int redirection_type;
     public:
         Command(){}
     	virtual bool execute(int in_fd, int out_fd) = 0;
@@ -23,7 +23,7 @@ class Command{
     	void set_out_fd(int out_fd){this->out_fd = out_fd;}
     	void set_in_file(string in_file){this->in_file = in_file;}
     	void set_out_file(string out_file){this->out_file = out_file;}
-    	void set_re_type(int re_type){this->re_type = re_type;}
+    	void set_redirection_type(int redirection_type){this->redirection_type = redirection_type;}
 };
 
 

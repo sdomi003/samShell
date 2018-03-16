@@ -106,16 +106,16 @@ Command* make_tree(string str, size_t &start){
         // first thing found was a redirect. Create executable out of args and set its output file to what comes after.
         ex = new Executable(args);
         if(str[found + 1] == '>'){
-            // we have >>, need to update start and also the re_type of the executable since this is first pass
-            cout << "entered right" << endl;
+            // we have >>, need to update start and also the redirection_type of the executable since this is first pass
+            
             // increase found not start bc I will set start to found+1 later
             ++ found;
             // 0 is >, 1 is >>, 2 is <
-            ex->set_re_type(1);
+            ex->set_redirection_type(1);
         }
         else{
-            // no need to ++start again, just set re_type to 0
-            ex->set_re_type(0);
+            // no need to ++start again, just set redirection_type to 0
+            ex->set_redirection_type(0);
         }
         // in order to get output file, we need to run the find next composite again and start our tree up.
         // note: what do we do when we ONLY have echo a > yo.txt ?
@@ -132,15 +132,15 @@ Command* make_tree(string str, size_t &start){
         // only &, |, and ; are allowed after a file name
         if(str[found] == '&'){
             link = new And(ex, 0);
-            start = start + 2;
+            start = found + 2;
         }
         else if(str[found] == '|'){
             link = new Or(ex, 0);
-            start = start + 2;
+            start = found + 2;
         }
         else if(str[found] == ';'){
             link = new Semi(ex, 0);
-            ++ start;
+            start = found + 1;
         }
         else{
             // npos
@@ -190,7 +190,7 @@ Command* make_tree(string str, size_t &start){
             //TRIALLLL
             
             start = found + 1;
-            found = str.find_first_of(";&|()",start);
+            found = str.find_first_of(";&|()>",start);
             // set new link's left as old link
             if(str[found] == '&'){
                 Command* temp = link;
@@ -215,6 +215,49 @@ Command* make_tree(string str, size_t &start){
             }
             else if(str[found] == ')'){ // idk, consider echo a && (echo b && ( echo c && echo d))
                 return link;
+            }
+            else if (str[found] == '>'){  // no executable to be made in the case of (echo hi && echo lo) > yo.txt
+                // first step is to see if it's > or >> and update start & found accordingly
+                cout << "OK FLAG" << endl;
+                if(str[found + 1] == '>'){
+                    ++found;
+                    link->set_redirection_type(1);
+                }
+                else{
+                    link->set_redirection_type(0);
+                }
+                // make sure to go to composites and use the files in and out and redirection types right on the right child
+                // ISSUE ERROR: WHAT IF WE HAVE (echo a && echo b) > yo.txt, not echo a && (echo b && echo c) > yo.txt
+                // they are different because in the second case, the () are a right subtree, but in the first case, the () are a single tree so 
+                // only setting right to be printed to file would neglect the left side of the tree.
+                // maybe give that case its own redirection_type number?
+                
+                // for now, solve case where we have echo a && (echo b && echo c) > yo.txt && echo b
+                start = found + 1;
+                found = str.find_first_of(";&|",start);
+                args = str.substr(start, found - start);
+                cout << "argsss : " << args << endl;
+                link->set_out_file(args);
+                
+                // create a new command and set current link as left
+                if(str[found] == '&'){
+                    Command* temp = link;
+                    link = new And(temp, 0);
+                    start = start + 2;
+                }
+                else if(str[found] == '|'){
+                    Command* temp = link;
+                    link = new Or(temp, 0);
+                    start = start + 2;
+                }
+                else if(str[found] == ';'){
+                    Command* temp = link;
+                    link = new Semi(temp, 0);
+                    ++start;
+                }
+                else if(found == string::npos){
+                    return link;
+                }
             }
         }
         else if(str[found] == ')'){

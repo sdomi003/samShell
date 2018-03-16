@@ -1,1 +1,6 @@
-(true)
+redirection_type1: -1
+exe args: echo b 
+b
+redirection_type2: -1
+exe args:  echo c
+c

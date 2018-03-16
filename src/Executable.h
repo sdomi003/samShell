@@ -47,9 +47,10 @@ class Executable : public Command{
 string args; 
 
 public:
-	Executable(string a){this->args = a; this->in_fd = 0; this->out_fd = 0; this->in_file = ""; this->out_file = ""; this->re_type = -1;}
+	Executable(string a){this->args = a; this->in_fd = 0; this->out_fd = 0; this->in_file = ""; this->out_file = ""; this->redirection_type = -1;}
 	//idea, make execute of type bool to return whether or not it worked
 	bool execute(int in_fd, int out_fd){
+		cout << "exe args: " << args << endl;
 		// set standard input and output right now
 		// if file is not empty, open it and set it using dup2
 		// if file is empty, check fd passed in as params
@@ -60,7 +61,7 @@ public:
 		// STOP HERE FOR NOW, 12:35 pm
 		int old_out_fd;
 		// need to save old out file descriptor and put it back in at the end of execute
-		if(!(re_type == -1)){
+		if(!(redirection_type == -1)){
 			old_out_fd = dup(1);
 		}
 		
@@ -68,27 +69,28 @@ public:
 			// clean infile 
 			cout << "entered!" << endl;
 			int first_char = 0;
-      int last_char = out_file.size() - 1;
-      while(out_file.at(first_char) == ' '){
-      	++first_char;
-      }
-      while(out_file.at(last_char) == ' '){
-      	--last_char;
-      }
-      out_file = out_file.substr(first_char, last_char + 1);
+			int last_char = out_file.size() - 1;
+			while(out_file.at(first_char) == ' '){
+			  ++first_char;
+			}
+			while(out_file.at(last_char) == ' '){
+			  --last_char;
+			}
+			out_file = out_file.substr(first_char, last_char);
+			cout << "cleaned1:" << out_file << ":" << endl;
 			// outfile is now cleaned
 			//check to see the type of output file this needs to be
-			if(re_type == 0){
+			if(redirection_type == 0){
 				//close(out_fd);
 				out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC);
 			}
-			else if(re_type == 1){
+			else if(redirection_type == 1){
 				// should I close out_fd? here for the if's out_fd?
 				//close(out_fd);
 				out_fd = open(out_file.c_str(), O_WRONLY | O_APPEND);
 			}
 			else{
-				cout << "ERROR, outfile data member set, but not the re_type" << endl;
+				cout << "ERROR, outfile data member set, but not the redirection_type" << endl;
 			}
 			
 			cout << "out fd: " << out_fd << endl;
@@ -192,7 +194,7 @@ public:
 	  	struct stat sb;
 	  	if(stat(args_arr[0], &sb) == -1){
 	        cout << "(false)" << endl;
-					if(!(re_type == -1)){
+					if(!(redirection_type == -1)){
 							close(out_fd);
 							dup2(old_out_fd, 1);
 							close(old_out_fd);
@@ -202,7 +204,7 @@ public:
 	    else if(flag == 'd'){
 	    	if(S_ISDIR(sb.st_mode)){
 	    		cout << "(true)" << endl;
-					if(!(re_type == -1)){
+					if(!(redirection_type == -1)){
 							close(out_fd);
 							dup2(old_out_fd, 1);
 							close(old_out_fd);
@@ -211,7 +213,7 @@ public:
 	    	}
 	    	else{
 	    		cout << "(false)" << endl;
-					if(!(re_type == -1)){
+					if(!(redirection_type == -1)){
 							close(out_fd);
 							dup2(old_out_fd, 1);
 							close(old_out_fd);
@@ -222,7 +224,7 @@ public:
 	    else if(flag == 'f'){
 	        if(S_ISREG(sb.st_mode)){
 	        	cout << "(true)" << endl;
-						if(!(re_type == -1)){
+						if(!(redirection_type == -1)){
 								close(out_fd);
 								dup2(old_out_fd, 1);
 								close(old_out_fd);
@@ -231,7 +233,7 @@ public:
 	        }
 	        else{
 	        	cout << "(false)" << endl;
-						if(!(re_type == -1)){
+						if(!(redirection_type == -1)){
 								close(out_fd);
 								dup2(old_out_fd, 1);
 								close(old_out_fd);
@@ -242,7 +244,7 @@ public:
 	    else if(flag == 'n' || flag == 'e'){
 	    	//file simply exists
 	    	cout << "(true)" << endl;
-				if(!(re_type == -1)){
+				if(!(redirection_type == -1)){
 						close(out_fd);
 						dup2(old_out_fd, 1);
 						close(old_out_fd);
@@ -281,7 +283,7 @@ public:
 					if (WEXITSTATUS(status) == 0){
 						itr = true;
 						// test
-						if(!(re_type == -1)){
+						if(!(redirection_type == -1)){
 								close(out_fd);
 								dup2(old_out_fd, 1);
 								close(old_out_fd);
@@ -293,7 +295,7 @@ public:
 					//itr is returned false
 					else{
 						itr = false;
-						if(!(re_type == -1)){
+						if(!(redirection_type == -1)){
 								close(out_fd);
 								dup2(old_out_fd, 1);
 								close(old_out_fd);
@@ -306,7 +308,7 @@ public:
 	
 	  delete[] cstr;
 		//test
-		if(!(re_type == -1)){
+		if(!(redirection_type == -1)){
 				close(out_fd);
 				dup2(old_out_fd, 1);
 				close(old_out_fd);
