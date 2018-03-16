@@ -12,7 +12,7 @@ class Semi : public Command{
 	 
 	
 	public:
-		Semi(Command* l, Command* r){this->in_fd = 0; this->out_fd = 0; this->left = l; this->right = r;  this->in_file = ""; this->out_file = "";}
+		Semi(Command* l, Command* r){this->in_fd = 0; this->out_fd = 0; this->left = l; this->right = r;  this->in_file = ""; this->out_file = ""; this->re_type = -1;}
 		bool execute(int in_fd, int out_fd){
 		    left->execute(0,0); 
 		    //cout << "execute semi" << endl;
@@ -27,7 +27,7 @@ class And : public Command{
 	 
 	
 	public:
-		And(Command* l, Command* r){this->in_fd = 0; this->out_fd = 0; this->left = l; this->right = r;  this->in_file = ""; this->out_file = "";}
+		And(Command* l, Command* r){this->in_fd = 0; this->out_fd = 0; this->left = l; this->right = r;  this->in_file = ""; this->out_file = ""; this->re_type = -1;}
 		bool execute(int in_fd, int out_fd){
 		    if(left->execute(0,0)){
 		    	return (right->execute(0,0));
@@ -43,7 +43,7 @@ class Or : public Command{
 	Command* left;
 	Command* right;
 	public:
-		Or(Command* l, Command* r){this->in_fd = 0; this->out_fd = 0; this->left = l; this->right = r; this->in_file = ""; this->out_file = "";}
+		Or(Command* l, Command* r){this->in_fd = 0; this->out_fd = 0; this->left = l; this->right = r; this->in_file = ""; this->out_file = ""; this->re_type = -1;}
 		bool execute(int in_fd, int out_fd){
 			if(!left->execute(0,0)){
 				return (right->execute(0,0));

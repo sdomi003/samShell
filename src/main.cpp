@@ -105,6 +105,18 @@ Command* make_tree(string str, size_t &start){
     else if(str[found] == '>'){
         // first thing found was a redirect. Create executable out of args and set its output file to what comes after.
         ex = new Executable(args);
+        if(str[found + 1] == '>'){
+            // we have >>, need to update start and also the re_type of the executable since this is first pass
+            cout << "entered right" << endl;
+            // increase found not start bc I will set start to found+1 later
+            ++ found;
+            // 0 is >, 1 is >>, 2 is <
+            ex->set_re_type(1);
+        }
+        else{
+            // no need to ++start again, just set re_type to 0
+            ex->set_re_type(0);
+        }
         // in order to get output file, we need to run the find next composite again and start our tree up.
         // note: what do we do when we ONLY have echo a > yo.txt ?
         start = found + 1;
@@ -114,6 +126,8 @@ Command* make_tree(string str, size_t &start){
         cout << "args: " << args << endl;
         // now we set the output file to the args found (which was really just a file name)
         ex->set_out_file(args);
+        // check for >> instead of just >
+        
         // also, after this step, we need to find the next composite which means we need to create a new composite here and set current executable as left.
         // only &, |, and ; are allowed after a file name
         if(str[found] == '&'){

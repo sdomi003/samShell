@@ -1,4 +1,6 @@
 
+// maybe I don't need 2 args in execute singe I can set the data members and use them????
+// no bc I need priority. Trickle down vs explicit
 #ifndef EXECUTABLE_H
 #define EXECUTABLE_H
 // FIX INCLUDES
@@ -45,7 +47,7 @@ class Executable : public Command{
 string args; 
 
 public:
-	Executable(string a){this->args = a; this->in_fd = 0; this->out_fd = 0; this->in_file = ""; this->out_file = "";}
+	Executable(string a){this->args = a; this->in_fd = 0; this->out_fd = 0; this->in_file = ""; this->out_file = ""; this->re_type = -1;}
 	//idea, make execute of type bool to return whether or not it worked
 	bool execute(int in_fd, int out_fd){
 		// set standard input and output right now
@@ -58,7 +60,10 @@ public:
 		// STOP HERE FOR NOW, 12:35 pm
 		int old_out_fd;
 		// need to save old out file descriptor and put it back in at the end of execute
-		old_out_fd = dup(1);
+		if(!(re_type == -1)){
+			old_out_fd = dup(1);
+		}
+		
 		if(!out_file.empty()){
 			// clean infile 
 			cout << "entered!" << endl;
@@ -72,7 +77,20 @@ public:
       }
       out_file = out_file.substr(first_char, last_char + 1);
 			// outfile is now cleaned
-			out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC);
+			//check to see the type of output file this needs to be
+			if(re_type == 0){
+				//close(out_fd);
+				out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC);
+			}
+			else if(re_type == 1){
+				// should I close out_fd? here for the if's out_fd?
+				//close(out_fd);
+				out_fd = open(out_file.c_str(), O_WRONLY | O_APPEND);
+			}
+			else{
+				cout << "ERROR, outfile data member set, but not the re_type" << endl;
+			}
+			
 			cout << "out fd: " << out_fd << endl;
 			dup2(out_fd,1);
 			// out works when I DON"T close out_fd
@@ -83,6 +101,9 @@ public:
 		
 		// split string into tokenS
 		
+		// test
+
+		//
 	  bool is_test = false;
 	  char flag = 'e';
 	  // cout << "args: " << args << endl; 
@@ -171,49 +192,61 @@ public:
 	  	struct stat sb;
 	  	if(stat(args_arr[0], &sb) == -1){
 	        cout << "(false)" << endl;
-	        close(out_fd);
-	        dup2(old_out_fd, 1);
-	        close(old_out_fd);
+					if(!(re_type == -1)){
+							close(out_fd);
+							dup2(old_out_fd, 1);
+							close(old_out_fd);
+					}
 	        return false;
 	    }
 	    else if(flag == 'd'){
 	    	if(S_ISDIR(sb.st_mode)){
 	    		cout << "(true)" << endl;
-	    		close(out_fd);
-	    		dup2(old_out_fd, 1);
-	    		close(old_out_fd);
+					if(!(re_type == -1)){
+							close(out_fd);
+							dup2(old_out_fd, 1);
+							close(old_out_fd);
+					}
 	    		return true;
 	    	}
 	    	else{
 	    		cout << "(false)" << endl;
-	    		close(out_fd);
-	    		dup2(old_out_fd, 1);
-	    		close(old_out_fd);
+					if(!(re_type == -1)){
+							close(out_fd);
+							dup2(old_out_fd, 1);
+							close(old_out_fd);
+					}
 	    		return false;
 	    	}
 	    } 
 	    else if(flag == 'f'){
 	        if(S_ISREG(sb.st_mode)){
 	        	cout << "(true)" << endl;
-	        	close(out_fd);
-	        	dup2(old_out_fd, 1);
-	        	close(old_out_fd);
+						if(!(re_type == -1)){
+								close(out_fd);
+								dup2(old_out_fd, 1);
+								close(old_out_fd);
+						}
 	        	return true;
 	        }
 	        else{
 	        	cout << "(false)" << endl;
-	        	close(out_fd);
-	        	dup2(old_out_fd, 1);
-	        	close(old_out_fd);
+						if(!(re_type == -1)){
+								close(out_fd);
+								dup2(old_out_fd, 1);
+								close(old_out_fd);
+						}
 	        	return false;
 	        }
 	    }
 	    else if(flag == 'n' || flag == 'e'){
 	    	//file simply exists
 	    	cout << "(true)" << endl;
-	    	close(out_fd);
-	    	dup2(old_out_fd, 1);
-	    	close(old_out_fd);
+				if(!(re_type == -1)){
+						close(out_fd);
+						dup2(old_out_fd, 1);
+						close(old_out_fd);
+				}
 	    	return true;
 	    }
 	  }
@@ -247,9 +280,12 @@ public:
 					// so itr is true
 					if (WEXITSTATUS(status) == 0){
 						itr = true;
-						close(out_fd);
-						dup2(old_out_fd, 1);
-						close(old_out_fd);
+						// test
+						if(!(re_type == -1)){
+								close(out_fd);
+								dup2(old_out_fd, 1);
+								close(old_out_fd);
+						}
 						return itr;
 					}
 					//else child run of execvp was incorrect so
@@ -257,9 +293,11 @@ public:
 					//itr is returned false
 					else{
 						itr = false;
-						close(out_fd);
-						dup2(old_out_fd, 1);
-						close(old_out_fd);
+						if(!(re_type == -1)){
+								close(out_fd);
+								dup2(old_out_fd, 1);
+								close(old_out_fd);
+						}
 						return itr;
 					}
 				}
@@ -268,9 +306,11 @@ public:
 	
 	  delete[] cstr;
 		//test
-		close(out_fd);
-		dup2(old_out_fd, 1);
-		close(old_out_fd);
+		if(!(re_type == -1)){
+				close(out_fd);
+				dup2(old_out_fd, 1);
+				close(old_out_fd);
+		}
 	  return true;
 	}
 	
