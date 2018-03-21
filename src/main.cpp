@@ -5,28 +5,88 @@
 #include "Command.h"
 #include "Executable.h"
 #include "Composites.h"
-
-/*  IDEAS FOR TEST
-        FOR THE CASE WHERE USER USES "test"
-            SIMPLY PASRSE AS USUAL.
-            WHEN AN EXECUTABLE IS GOING TP BE CREATED, FIRST CHECK TO SEE IF THE FIRST ARG IS "test"
-            IF FIRST ARG IS TEST, THEN INSTEAD OF CREATING EXECUTABLE, CREATE TEST
-        FOR THE CASE WHERE USER USES []
-            ADD "[" TO THE SEARCH-FOR CHARACTERS.
-            IF "[" IS FOUND, THEN SEARCH FOR ']' THEN SET THE ARGS TO THE STRING INSIDE "[]" AND CREATE A "test" OBJECT
-            
-    IDEA #2 - this is the one I'm implementing right now
-        treat test and [] as normal executables, except when it comes time to execute, simply check to see if the first char is [ or if the first arg is "test"
-        and then execute a different way (test function is already written by me in stat_practice.cpp)
-                
-*/      
-
-// resolving issue with (echo A && echo B) && (echo C && echo D) && exit
-// exit will walways be treated as a leaf
-// create an if statement that returns NULL if exit is the argument
-// then in the execute function 
-
 using namespace std;
+
+
+// takes in current start and finds next args
+// puts args in args and returns found position
+string clean_file(string str){
+    int start = 0;
+    int end = str.size() - 1;
+    while(str[start] == ' '){
+        ++ start;
+    }
+    while(str[end] == ' '){
+        --end;
+    }
+    return str.substr(start, end-start + 1);
+}
+
+size_t get_next_arg(string str, string &args, size_t start){
+    size_t found = str.find_first_of(";&|()<>",start);
+    size_t temp_start;
+    // take care of process | process | process | process
+    while(str[found] == '|' && str[found + 1] != '|'){
+        temp_start = found + 1;
+        found = str.find_first_of(";&|()<>",temp_start);
+    }
+    args = str.substr(start, found - start);
+    return found;
+}
+
+void change_status(Command* top_node, string file_name, string redirect_type){
+    if(redirect_type == ">"){
+        // clean file_name
+        file_name = clean_file(file_name);
+        top_node->set_out_file(file_name);
+        top_node->set_redirection_type(0);
+    }
+    else if(redirect_type == ">>"){
+        file_name = clean_file(file_name);
+        top_node->set_out_file(file_name);
+        top_node->set_redirection_type(1);
+    }
+}
+
+string get_user_input(){
+    string str;
+    bool error = 0;
+    do{
+        int num_parenthesis = 0;
+        int num_brackets = 0;
+        error = 0;
+        cout << "$ ";
+        size_t first_hash;
+        getline(cin, str);
+        first_hash = str.find_first_of("#",0);
+        if(first_hash != string::npos){
+            str.resize(first_hash); // maybe +1
+        }
+        // FIX ME: ADD A CHECKER TO ENSURE MATCHING ()
+        // FIX ME: might as well check for (( here too
+        // at this point, str should be ready to be parsed and has been checked for matching () 
+        for(unsigned int i = 0; i < str.size(); ++i){
+            if(str.at(i) == '(' || str.at(i) == ')'){
+                ++num_parenthesis;
+            }
+            else if(str.at(i) == '[' || str.at(i) == ']'){
+                ++num_brackets;
+            }
+        }
+        
+        if (num_brackets % 2 != 0){
+            cout << "ERROR: Uneven number of brackets" << endl;
+            error = 1;
+        }
+        if (num_parenthesis % 2 != 0){
+            cout << "EROR: Unven number of parenthesis" << endl;
+            error = 1; 
+        }
+    }while(error == 1);
+    return str;
+}
+
+
 
 Command* make_tree(string str, size_t &start){
     bool single = false;
@@ -37,9 +97,11 @@ Command* make_tree(string str, size_t &start){
     size_t found = 0;
     
     //CHANGE TO ";&|()"
-    found = str.find_first_of(";&|()<>",start);
-    args = str.substr(start, found - start);
+    // found = str.find_first_of(";&|()",start);
+    // args = str.substr(start, found - start);
     // args is fine here
+    
+    found = get_next_arg(str, args, start);
     
     
     if(str[found] == '&'){
@@ -93,6 +155,9 @@ Command* make_tree(string str, size_t &start){
         else if(str[found] == ')'){ // idk, consider echo a && (echo b && ( echo c && echo d))
             return link;
         }
+        // if > is found. maybe add a new composite that just executes single child but opens file first
+        // essentially a decorator
+        
     }
     else if(str[found] == ')'){
         // test if they put spaces in between
@@ -103,34 +168,25 @@ Command* make_tree(string str, size_t &start){
         return link;            // THIS COULD HAPPEN IF WE HAVE echo a && (echo b && ( echo c && echo d))
     }
     else if(str[found] == '>'){
-        // first thing found was a redirect. Create executable out of args and set its output file to what comes after.
+        // maybe make this subrotine called single_>
+        // first pass, create new ex and pass that in as the command to have its redirection_status changed
+        // echo a > yo.txt && echo b
         ex = new Executable(args);
         if(str[found + 1] == '>'){
-            // we have >>, need to update start and also the redirection_type of the executable since this is first pass
-            
-            // increase found not start bc I will set start to found+1 later
-            ++ found;
-            // 0 is >, 1 is >>, 2 is <
-            ex->set_redirection_type(1);
+            start = found + 2;
+            found = get_next_arg(str, args, start);
+            change_status(ex, args, ">>");
         }
         else{
-            // no need to ++start again, just set redirection_type to 0
-            ex->set_redirection_type(0);
+            start = found + 1;
+            found = get_next_arg(str, args, start);
+            change_status(ex, args, ">");
         }
-        // in order to get output file, we need to run the find next composite again and start our tree up.
-        // note: what do we do when we ONLY have echo a > yo.txt ?
-        start = found + 1;
-        found = str.find_first_of(";&|",start);
-        args = str.substr(start, found - start);
-        // the following shows that args has the correct value
-        cout << "args: " << args << endl;
-        // now we set the output file to the args found (which was really just a file name)
-        ex->set_out_file(args);
-        // check for >> instead of just >
         
-        // also, after this step, we need to find the next composite which means we need to create a new composite here and set current executable as left.
-        // only &, |, and ; are allowed after a file name
-        if(str[found] == '&'){
+        if(found == string::npos){
+            return ex;
+        }
+        else if(str[found] == '&'){
             link = new And(ex, 0);
             start = found + 2;
         }
@@ -142,14 +198,16 @@ Command* make_tree(string str, size_t &start){
             link = new Semi(ex, 0);
             start = found + 1;
         }
-        else{
-            // npos
-            // should I use string size -1 here ? I didn't but idk
-            // output file already set so just set the bool is single to true and make link = the executable
-            link = ex;
-            single = true;
+        else if(str[found] == ')'){
+            start = found + 1;
+            return ex;
         }
-        // now we should have a tree that consists of an executable with an output file in it, and its next composite set OR allow it to be a single if npos.
+        else{
+            cout << "ERROR: NOTHING RETURNED IN FIRST PASS > " << endl;
+        }
+        // take 1 away from found to make it as if > yo.txt nev er happened
+        // so that the rest of the code stays the same
+        
     }
     else{
         ex = new Executable(args);
@@ -157,12 +215,45 @@ Command* make_tree(string str, size_t &start){
         start = found + 1;
     }
     
-    
-    found = str.find_first_of(";&|()>",start);
-    args = str.substr(start, found - start);
+    // echo a > yo.txt && echo b > hi.txt       && echo hi orr && (echo hi)
+    found = get_next_arg(str, args, start);
     
     while(found != string::npos){
-        if(str[found] == '&'){
+        if(str[found] == '>'){
+            ex = new Executable(args);
+            link->setRightChild(ex);
+            if(str[found + 1] == '>'){
+                start = found + 2;
+                found = get_next_arg(str, args, start);
+                change_status(link, args, ">>");
+            }
+            else{
+                start = found + 1;
+                found = get_next_arg(str, args, start);
+                change_status(link, args, ">");
+            }
+            
+            if(str[found] == '&'){
+                link = new And(link, 0);
+                start = found + 2;
+            }
+            else if(str[found] == '|'){
+                link = new Or(link, 0);
+                start = found + 2;
+            }
+            else if(str[found] == ';'){
+                link = new Semi(link, 0);
+                start = found + 1;
+            }
+            else if(found == string::npos){
+                return link;
+            }
+            else if(str[found] == ')'){
+                start = found + 1;
+                return link;
+            }
+        }
+        else if(str[found] == '&'){
             ex = new Executable(args);
             link->setRightChild(ex);
             Command* temp = link;
@@ -181,16 +272,14 @@ Command* make_tree(string str, size_t &start){
         else if(str[found] == '('){
             ++found;
             link->setRightChild(make_tree(str, found));
-            // whenever we create a right subtree, the next step isn't to set right because we'll overwrite the right subtree we just made
-            // to solve this, we make the next composite found and set its left child to the top of our tree
-            
             // cout << "evaluating link after subtree added as right child" << endl;
             // link->execute();
             // cout << endl;
             //TRIALLLL
             
+            // maybe this start = found + 1 is a probelm
             start = found + 1;
-            found = str.find_first_of(";&|()>",start);
+            found = get_next_arg(str, args, start);
             // set new link's left as old link
             if(str[found] == '&'){
                 Command* temp = link;
@@ -216,48 +305,43 @@ Command* make_tree(string str, size_t &start){
             else if(str[found] == ')'){ // idk, consider echo a && (echo b && ( echo c && echo d))
                 return link;
             }
-            else if (str[found] == '>'){  // no executable to be made in the case of (echo hi && echo lo) > yo.txt
-                // first step is to see if it's > or >> and update start & found accordingly
-                cout << "OK FLAG" << endl;
+            else if(str[found] == '>'){
+                // echo a && (echo b && echo c) > yo.txt    && echo d
+                // for first pass, iterate down the left side until null and set file (terrible but it might work)
                 if(str[found + 1] == '>'){
-                    ++found;
-                    link->set_redirection_type(1);
+                    start = found + 2;
+                    found = get_next_arg(str, args, start);
+                    change_status(link, args, ">>");
                 }
                 else{
-                    link->set_redirection_type(0);
+                    start = found + 1;
+                    found = get_next_arg(str, args, start);
+                    change_status(link, args, ">");
                 }
-                // make sure to go to composites and use the files in and out and redirection types right on the right child
-                // ISSUE ERROR: WHAT IF WE HAVE (echo a && echo b) > yo.txt, not echo a && (echo b && echo c) > yo.txt
-                // they are different because in the second case, the () are a right subtree, but in the first case, the () are a single tree so 
-                // only setting right to be printed to file would neglect the left side of the tree.
-                // maybe give that case its own redirection_type number?
-                
-                // for now, solve case where we have echo a && (echo b && echo c) > yo.txt && echo b
-                start = found + 1;
-                found = str.find_first_of(";&|",start);
-                args = str.substr(start, found - start);
-                cout << "argsss : " << args << endl;
-                link->set_out_file(args);
-                
-                // create a new command and set current link as left
+    
+                if(found == string::npos){
+                    return link;
+                }
                 if(str[found] == '&'){
-                    Command* temp = link;
-                    link = new And(temp, 0);
+                    link = new And(link, 0);
                     start = found + 2;
                 }
                 else if(str[found] == '|'){
-                    Command* temp = link;
-                    link = new Or(temp, 0);
+                    link = new Or(link, 0);
                     start = found + 2;
                 }
                 else if(str[found] == ';'){
-                    Command* temp = link;
-                    link = new Semi(temp, 0);
+                    link = new Semi(link, 0);
                     start = found + 1;
                 }
                 else if(found == string::npos){
                     return link;
                 }
+                else if(str[found] == ')'){
+                    start = found + 1;
+                    return link;
+                }
+                
             }
         }
         else if(str[found] == ')'){
@@ -270,57 +354,6 @@ Command* make_tree(string str, size_t &start){
             // cout << endl;
             return link;
         }
-        else if(str[found] == '>'){
-            cout << "args > " << args <<  endl;
-            link->setRightChild(new Executable(args));
-            // echo a && echo b > yo.txt && echo c
-            
-            // first check if >>
-            if(str[found + 1] == '>'){
-                // we have >>, need to update start and also the redirection_type of the executable since this is first pass
-                
-                // increase found not start bc I will set start to found+1 later
-                ++ found;
-                // 0 is >, 1 is >>, 2 is <
-                link->set_redirection_type(1);
-            }
-            else{
-                // no need to ++start again, just set redirection_type to 0
-                link->set_redirection_type(0);
-            }
-            start = found + 1;
-            found = str.find_first_of(";&|",start);
-            args = str.substr(start, found - start);
-            cout << "argies : " << args << endl;
-            link->set_out_file(args);
-            if(found == string::npos){
-                //break; // check this using echo a && echo b > yo.txt
-                return link;
-            }
-            else if(str[found] == '&'){
-                Command* temp = link;
-                link = new And(temp, 0);
-                start = found + 2;
-                
-            }
-            else if(str[found] == '|'){
-                Command* temp = link;
-                link = new Or(temp, 0);
-                start = found + 2;
-                
-            }
-            else if(str[found] == ';'){
-                Command* temp = link;
-                link = new Semi(temp, 0);
-                start = found + 1;
-            }
-            else{
-                cout << "error 123" << endl;
-            }
-          
-            
-            
-        }
         else{
             ex = new Executable(args);
             link->setRightChild(ex);
@@ -329,8 +362,7 @@ Command* make_tree(string str, size_t &start){
             start = found + 1;
             temp = 0;
         }
-        found = str.find_first_of(";&|()",start);
-        args = str.substr(start, found - start);
+        found = get_next_arg(str, args, start);
      
     }
     // set last right
@@ -346,46 +378,14 @@ Command* make_tree(string str, size_t &start){
 int main(){
     
     string str;
-    bool error = 0;
-    do{
-        int num_parenthesis = 0;
-        int num_brackets = 0;
-        error = 0;
-        cout << "$ ";
-        size_t first_hash;
-        getline(cin, str);
-        first_hash = str.find_first_of("#",0);
-        if(first_hash != string::npos){
-            str.resize(first_hash); // maybe +1
-        }
-        // FIX ME: ADD A CHECKER TO ENSURE MATCHING ()
-        // FIX ME: might as well check for (( here too
-        // at this point, str should be ready to be parsed and has been checked for matching () 
-        for(unsigned int i = 0; i < str.size(); ++i){
-            if(str.at(i) == '(' || str.at(i) == ')'){
-                ++num_parenthesis;
-            }
-            else if(str.at(i) == '[' || str.at(i) == ']'){
-                ++num_brackets;
-            }
-        }
-        
-        if (num_brackets % 2 != 0){
-            cout << "ERROR: Uneven number of brackets" << endl;
-            error = 1;
-        }
-        if (num_parenthesis % 2 != 0){
-            cout << "EROR: Unven number of parenthesis" << endl;
-            error = 1; 
-        }
-    }while(error == 1);
+    str = get_user_input();
     
     Command* base_node;
     while(str != "exit" && str != "quit"){
         size_t start = 0;
         base_node = make_tree(str, start);
         try{
-            base_node->execute(0,0);
+            base_node->execute();
         }
         catch (const char* msg){
             cout << msg << endl;
@@ -393,35 +393,7 @@ int main(){
         }
         
         // get user input again
-        do{
-            int num_parenthesis = 0;
-            int num_brackets = 0;
-            error = 0;
-            cout << "$ ";
-            size_t first_hash;
-            getline(cin, str);
-            first_hash = str.find_first_of("#",0);
-            if(first_hash != string::npos){
-                str.resize(first_hash); // maybe +1
-            }
-            for(unsigned int i = 0; i < str.size(); ++i){
-                if(str.at(i) == '(' || str.at(i) == ')'){
-                    ++num_parenthesis;
-                }
-                else if(str.at(i) == '[' || str.at(i) == ']'){
-                    ++num_brackets;
-                }
-            }
-            
-            if (num_brackets % 2 != 0){
-                cout << "ERROR: Uneven number of brackets" << endl;
-                error = 1;
-            }
-            if (num_parenthesis % 2 != 0){
-                cout << "ERROR: Unven number of parenthesis" << endl;
-                error = 1; 
-            }
-        }while(error == 1);
+        str = get_user_input();
     }
 
     

@@ -1,2 +1,11 @@
-exe args:  echo b 
+redirection & -1
+exe args: echo b 
+
+
+args arr: echo
 b
+exe args:  echo c
+
+
+args arr: echo
+c
