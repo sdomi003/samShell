@@ -39,12 +39,27 @@ void change_status(Command* top_node, string file_name, string redirect_type){
         // clean file_name
         file_name = clean_file(file_name);
         top_node->set_out_file(file_name);
-        top_node->set_redirection_type(0);
+        if(top_node->get_redirection_type() == 2){
+            top_node->set_redirection_type(3);
+        }
+        else{
+            top_node->set_redirection_type(0);
+        }
     }
     else if(redirect_type == ">>"){
         file_name = clean_file(file_name);
         top_node->set_out_file(file_name);
-        top_node->set_redirection_type(1);
+        if(top_node->get_redirection_type() == 2){
+            top_node->set_redirection_type(4);
+        }
+        else{
+            top_node->set_redirection_type(1);
+        }
+    }
+    else if(redirect_type == "<"){
+        file_name = clean_file(file_name);
+        top_node->set_in_file(file_name);
+        top_node->set_redirection_type(2);
     }
 }
 
@@ -128,8 +143,7 @@ Command* make_tree(string str, size_t &start){
         // link->execute();
         // cout << endl;
         start = found + 1;
-    
-        found = str.find_first_of(";&|()",start);
+        found = get_next_arg(str, args, start);
         // set new link's left as old link
         if(str[found] == '&'){
             Command* temp = link;
@@ -157,6 +171,7 @@ Command* make_tree(string str, size_t &start){
         }
         // if > is found. maybe add a new composite that just executes single child but opens file first
         // essentially a decorator
+        // also works for <
         
     }
     else if(str[found] == ')'){
@@ -167,21 +182,33 @@ Command* make_tree(string str, size_t &start){
         start = found;
         return link;            // THIS COULD HAPPEN IF WE HAVE echo a && (echo b && ( echo c && echo d))
     }
-    else if(str[found] == '>'){
+    else if(str[found] == '>' || str[found] == '<'){
         // maybe make this subrotine called single_>
         // first pass, create new ex and pass that in as the command to have its redirection_status changed
         // echo a > yo.txt && echo b
         ex = new Executable(args);
-        if(str[found + 1] == '>'){
-            start = found + 2;
-            found = get_next_arg(str, args, start);
-            change_status(ex, args, ">>");
+        while(found != string::npos && (str[found] == '>' || str[found] == '<')){
+            if(str[found + 1] == '>'){
+                start = found + 2;
+                found = get_next_arg(str, args, start);
+                change_status(ex, args, ">>");
+            }
+            else if(str[found] == '>'){
+                start = found + 1;
+                found = get_next_arg(str, args, start);
+                change_status(ex, args, ">");
+            }
+            else if(found == string::npos){
+                break;
+            }
+            else{
+                // string[found] == '<'
+                start = found + 1;
+                found = get_next_arg(str, args, start);
+                change_status(ex, args, "<");
+            }
         }
-        else{
-            start = found + 1;
-            found = get_next_arg(str, args, start);
-            change_status(ex, args, ">");
-        }
+        
         
         if(found == string::npos){
             return ex;
@@ -219,18 +246,30 @@ Command* make_tree(string str, size_t &start){
     found = get_next_arg(str, args, start);
     
     while(found != string::npos){
-        if(str[found] == '>'){
+        if(str[found] == '>' || str[found] == '<'){
             ex = new Executable(args);
             link->setRightChild(ex);
-            if(str[found + 1] == '>'){
-                start = found + 2;
-                found = get_next_arg(str, args, start);
-                change_status(link, args, ">>");
-            }
-            else{
-                start = found + 1;
-                found = get_next_arg(str, args, start);
-                change_status(link, args, ">");
+            
+            while(found != string::npos && (str[found] == '>' || str[found] == '<')){
+                if(str[found + 1] == '>'){
+                    start = found + 2;
+                    found = get_next_arg(str, args, start);
+                    change_status(link, args, ">>");
+                }
+                else if(str[found] == '>'){
+                    start = found + 1;
+                    found = get_next_arg(str, args, start);
+                    change_status(link, args, ">");
+                }
+                else if(found == string::npos){
+                    break;
+                }
+                else{
+                    // string[found] == '<'
+                    start = found + 1;
+                    found = get_next_arg(str, args, start);
+                    change_status(link, args, "<");
+                }
             }
             
             if(str[found] == '&'){
@@ -305,18 +344,29 @@ Command* make_tree(string str, size_t &start){
             else if(str[found] == ')'){ // idk, consider echo a && (echo b && ( echo c && echo d))
                 return link;
             }
-            else if(str[found] == '>'){
+            else if(str[found] == '>' || str[found] == '<'){
                 // echo a && (echo b && echo c) > yo.txt    && echo d
                 // for first pass, iterate down the left side until null and set file (terrible but it might work)
-                if(str[found + 1] == '>'){
-                    start = found + 2;
-                    found = get_next_arg(str, args, start);
-                    change_status(link, args, ">>");
-                }
-                else{
-                    start = found + 1;
-                    found = get_next_arg(str, args, start);
-                    change_status(link, args, ">");
+                while(found != string::npos && (str[found] == '>' || str[found] == '<')){
+                    if(str[found + 1] == '>'){
+                        start = found + 2;
+                        found = get_next_arg(str, args, start);
+                        change_status(link, args, ">>");
+                    }
+                    else if(str[found] == '>'){
+                        start = found + 1;
+                        found = get_next_arg(str, args, start);
+                        change_status(link, args, ">");
+                    }
+                    else if(found == string::npos){
+                        break;
+                    }
+                    else{
+                        // string[found] == '<'
+                        start = found + 1;
+                        found = get_next_arg(str, args, start);
+                        change_status(link, args, "<");
+                    }
                 }
     
                 if(found == string::npos){

@@ -6,6 +6,8 @@
 #include "Command.h"
 using namespace std;
 
+
+
 class Semi : public Command{
 	Command* left;
 	Command* right;
@@ -14,9 +16,23 @@ class Semi : public Command{
 	public:
 		Semi(Command* l, Command* r){this->left = l; this->right = r;  this->in_file = ""; this->out_file = ""; this->redirection_type = -1;}
 		bool execute(){
-		    left->execute(); 
-		    //cout << "execute semi" << endl;
-		    return (right->execute());
+			int old_out_fd = -1;
+			int new_out_fd = -1;
+			int old_in_fd  = -1;
+			int new_in_fd  = -1;
+			bool rtn;
+			
+			if(redirection_type != -1){
+				left->execute();
+				this->begin_redirection(old_out_fd, new_out_fd, old_in_fd, new_in_fd);
+		    	rtn = right->execute();
+		    	this->end_redirection(old_out_fd, new_out_fd, old_in_fd, new_in_fd);
+		    	return rtn;
+			}
+			else{
+				left->execute(); 
+		    	return (right->execute());	
+			}
 		}
 		void setRightChild(Command* r){this->right = r;}
 };
@@ -29,43 +45,27 @@ class And : public Command{
 	public:
 		And(Command* l, Command* r){this->left = l; this->right = r;  this->in_file = ""; this->out_file = ""; this->redirection_type = -1;}
 		bool execute(){
-			// case where we have ">"
-			
-			
-			if(redirection_type == 0){
+			int old_out_fd = -1;
+			int new_out_fd = -1;
+			int old_in_fd  = -1;
+			int new_in_fd  = -1;
+			bool rtn;
+
+			if(redirection_type != -1){
 				if(left->execute()){
-					int old_out_fd = dup(1);
-					int new_out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC);
-					dup2(new_out_fd, 1);
-					bool rtn = right->execute();
-					close(new_out_fd);
-					dup2(old_out_fd, 1);
+					this->begin_redirection(old_out_fd, new_out_fd, old_in_fd, new_in_fd);
+					rtn = right->execute();
+					this->end_redirection(old_out_fd, new_out_fd, old_in_fd, new_in_fd);
 					return rtn;
-				}
+				} 
+				return false;
 			}
-			else if(redirection_type == 1){
-				if(left->execute()){
-					int old_out_fd = dup(1);
-					int new_out_fd = open(out_file.c_str(), O_WRONLY | O_APPEND);
-					dup2(new_out_fd, 1);
-					bool rtn = right->execute();
-					close(new_out_fd);
-					dup2(old_out_fd, 1);
-					return rtn;
-				}
-			}
-			//case where we don't change output or input. Could still be
-			// output to different souce but that's on the parent to 
-			// implement in this tree
 			else{
 				if(left->execute()){
-		    		return (right->execute());
-		    	} 
-		    	return false;
+					return (right->execute());
+				} 
+				return false;
 			}
-
-		    //cout << "execute And" << endl;
-		    
 		}
 		void setRightChild(Command* r){this->right = r;}
 };
@@ -76,8 +76,17 @@ class Or : public Command{
 	public:
 		Or(Command* l, Command* r){this->left = l; this->right = r;  this->in_file = ""; this->out_file = ""; this->redirection_type = -1;}
 		bool execute(){
+			int old_out_fd = -1;
+			int new_out_fd = -1;
+			int old_in_fd  = -1;
+			int new_in_fd  = -1;
+			bool rtn;
+			
 			if(!left->execute()){
-				return (right->execute());
+				this->begin_redirection(old_out_fd, new_out_fd, old_in_fd, new_in_fd);
+				rtn = right->execute();
+				this->end_redirection(old_out_fd, new_out_fd, old_in_fd, new_in_fd);
+				return rtn;
 			}
 		    //cout << "execute Or" << endl;
 		    return true;
