@@ -1,9 +1,0 @@
-redirection & 0
-exe args:  echo yo 
-
-
-args arr: echo
-yo
-outfile before clean: yo.txt :
-cleaned:yo.txt:
-special out_fd: 6
