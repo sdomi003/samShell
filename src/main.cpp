@@ -24,12 +24,12 @@ string clean_file(string str){
 
 size_t get_next_arg(string str, string &args, size_t start){
     size_t found = str.find_first_of(";&|()<>",start);
-    size_t temp_start;
+    // size_t temp_start;
     // take care of process | process | process | process
-    while(str[found] == '|' && str[found + 1] != '|'){
-        temp_start = found + 1;
-        found = str.find_first_of(";&|()<>",temp_start);
-    }
+    // while(str[found] == '|' && str[found + 1] != '|'){
+    //     temp_start = found + 1;
+    //     found = str.find_first_of(";&|()<>",temp_start);
+    // }
     args = str.substr(start, found - start);
     return found;
 }
@@ -118,8 +118,12 @@ Command* make_tree(string str, size_t &start){
     
     found = get_next_arg(str, args, start);
     
-    
-    if(str[found] == '&'){
+    if(str[found] == '|' && str[found+1] != '|'){
+        ex = new Executable(args);
+        link = new Pipe(ex, 0);
+        start = found + 1;
+    }
+    else if(str[found] == '&'){
         ex = new Executable(args);
         link = new And(ex, 0);
         start = found + 2;
@@ -145,7 +149,13 @@ Command* make_tree(string str, size_t &start){
         start = found + 1;
         found = get_next_arg(str, args, start);
         // set new link's left as old link
-        if(str[found] == '&'){
+        if(str[found] == '|' && str[found + 1] != '|'){
+            Command* temp = link;
+            link = new Pipe(temp, 0);
+            start = found + 1;
+            temp = 0;
+        }
+        else if(str[found] == '&'){
             Command* temp = link;
             link = new And(temp, 0);
             start = found + 2;
@@ -209,8 +219,11 @@ Command* make_tree(string str, size_t &start){
             }
         }
         
-        
-        if(found == string::npos){
+        if(str[found] == '|' && str[found + 1] != '|'){
+            link = new Pipe(ex, 0);
+            start = found + 1;
+        }
+        else if(found == string::npos){
             return ex;
         }
         else if(str[found] == '&'){
@@ -246,7 +259,15 @@ Command* make_tree(string str, size_t &start){
     found = get_next_arg(str, args, start);
     
     while(found != string::npos){
-        if(str[found] == '>' || str[found] == '<'){
+        if(str[found] == '|' && str[found + 1] != '|'){
+            ex = new Executable(args);
+            link->setRightChild(ex);
+            Command* temp = link;
+            link = new Pipe(temp, 0);
+            start = found + 1;
+            temp = 0;
+        }
+        else if(str[found] == '>' || str[found] == '<'){
             ex = new Executable(args);
             link->setRightChild(ex);
             
@@ -320,7 +341,13 @@ Command* make_tree(string str, size_t &start){
             start = found + 1;
             found = get_next_arg(str, args, start);
             // set new link's left as old link
-            if(str[found] == '&'){
+            if(str[found] == '|' && str[found + 1] != '|'){
+                Command* temp = link;
+                link = new Pipe(temp, 0);
+                start = found + 1;
+                temp = 0;
+            }
+            else if(str[found] == '&'){
                 Command* temp = link;
                 link = new And(temp, 0);
                 start = found + 2;
@@ -368,7 +395,10 @@ Command* make_tree(string str, size_t &start){
                         change_status(link, args, "<");
                     }
                 }
-    
+                if(str[found] == '|' && str[found + 1] != '|'){
+                    link = new Pipe(link, 0);
+                    start = found + 1;
+                }
                 if(found == string::npos){
                     return link;
                 }

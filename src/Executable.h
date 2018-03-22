@@ -144,7 +144,7 @@ public:
 			return test_bool;
 		}
 		else{
-		  int status;
+			int status;
 		    bool itr;
 		  	pid_t pid = fork();
 			//child pid	

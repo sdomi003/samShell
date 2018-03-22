@@ -36,12 +36,12 @@ class Command{
         void begin_redirection( int& old_out_fd, int& new_out_fd, int& old_in_fd, int& new_in_fd){
             if(redirection_type == 0){
                 old_out_fd = dup(1);
-                new_out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC);
+                new_out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC | O_CREAT);
                 dup2(new_out_fd, 1);
             }
             else if(redirection_type == 1){
                 old_out_fd = dup(1);
-                new_out_fd = open(out_file.c_str(), O_WRONLY | O_APPEND);
+                new_out_fd = open(out_file.c_str(), O_WRONLY | O_APPEND | O_CREAT);
                 dup2(new_out_fd, 1);
             }
             else if(redirection_type == 2){
@@ -51,7 +51,7 @@ class Command{
             }
             else if(redirection_type == 3){
                 old_out_fd = dup(1);
-                new_out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC);
+                new_out_fd = open(out_file.c_str(), O_WRONLY | O_TRUNC | O_CREAT);
                 dup2(new_out_fd, 1);
                 old_in_fd = dup(0);
                 new_in_fd = open(in_file.c_str(), O_RDONLY);
@@ -59,7 +59,7 @@ class Command{
             }
             else if(redirection_type == 4){
                 old_out_fd = dup(1);
-                new_out_fd = open(out_file.c_str(), O_WRONLY | O_APPEND);
+                new_out_fd = open(out_file.c_str(), O_WRONLY | O_APPEND | O_CREAT);
                 dup2(new_out_fd, 1);
                 old_in_fd = dup(0);
                 new_in_fd = open(in_file.c_str(), O_RDONLY);
