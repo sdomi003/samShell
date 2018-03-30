@@ -1,19 +1,35 @@
-# Assignment 4
+# samShell
 
-We now support redirection and piping.
-For a detailed view, visit "shell documentation" in the docs folder.
+I created this shell which supports:
+```
+Logic operators:            && || ; 
+Parenthesis:                ()
+Input/Output Redirection:   > >> < 
+Piping:                     | 
+Tests:                      using both "test" and []
+Comments:                   anything after '#' is ignored
+```
+I used C/C++ and basic linux system calls such as:
+```
+pipe(), dup() and dup2(), fork(), open() and close(), and execvp()
+```
 
-KNOWN ERRORS:
+An inportant key of my implementation is that I used [Composite Pattern](https://en.wikipedia.org/wiki/Composite_pattern).
 
-One error is that (echo a && echo b) > file.txt will only echo b into file.txt
-This is because it is set up to apply the redirection to the right child of the top node. 
-So echo a && (echo a && echo b) > file.txt WORKS but
-(echo a && echo b) > file.txt DOES NOT work.
+## Getting Started and Installing
 
-FIX:
+Git clone this repository, move to its directory, then make.
+Simply move to the bin (which will be created with make) and run samShell.
+You will be prompted with a "$" for your input.
+To exit, simply type in "exit" or "quit" anywhere in a composite of commands or as a command alone.
 
-This is easily fixed by adding a decorator which will have 1 child, and it will redirect the entire child.
-I will update that soon.
+## Author
+Samuel Dominguez
+Univerity of California, Riverside
+Computer Science and Engineering
+## License
 
-## Percentage Distrubution
-We want to distribute percentages 50/50.
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Documentation
+I have created extensive documentation on how this program creates a tree of commands and executes them. Visit the Documents directory for more.
