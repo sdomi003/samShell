@@ -19,14 +19,20 @@ An inportant key of my implementation is that I used [Composite Pattern](https:/
 ## Getting Started and Installing
 
 Git clone this repository, move to its directory, then make.
+
 Simply move to the bin (which will be created with make) and run samShell.
+
 You will be prompted with a "$" for your input.
+
 To exit, simply type in "exit" or "quit" anywhere in a composite of commands or as a command alone.
 
 ## Author
 Samuel Dominguez
+
 Univerity of California, Riverside
+
 Computer Science and Engineering
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
